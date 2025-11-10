@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>MIYU Key Generator</title>
+  <style>
+    body {background:#0e0e10;color:#fff;font-family:Poppins,sans-serif;text-align:center;padding:40px;}
+    h1 {color:#ff80ff;}
+    button {background:#ff80ff;color:#fff;border:none;padding:10px 20px;border-radius:10px;cursor:pointer;margin:10px;font-size:16px;}
+    button:hover {background:#d96be0;}
+    .key-box {background:#1e1e20;padding:15px;margin:10px auto;border-radius:10px;width:300px;text-align:center;}
+    .copy {background:transparent;border:none;cursor:pointer;color:#ff80ff;font-size:18px;margin-left:10px;}
+    .time {color:#9f9;font-size:14px;}
+  </style>
+</head>
+<body>
+  <h1>MIYU Key Generator</h1>
+  <p>Tạo key ngẫu nhiên, có thời hạn, lưu và quản lý qua server.</p>
+
+  <select id="timeSelect">
+    <option value="24">24h</option>
+    <option value="48">48h</option>
+    <option value="120">120h</option>
+    <option value="168">1 tuần</option>
+  </select>
+  <button onclick="generateKey()">Tạo key</button>
+  <button onclick="loadKeys()">Xem key đang hoạt động</button>
+
+  <div id="keyList"></div>
+
+  <script>
+    const API_URL = "https://miyu-server.onrender.com"; // 🔧 sửa URL này sau
+
+    async function generateKey() {
+      const hours = document.getElementById("timeSelect").value;
+      const res = await fetch(`${API_URL}/api/create?hours=${hours}`);
+      const data = await res.json();
+      alert("Key mới: " + data.key);
+      loadKeys();
+    }
+
+    async function loadKeys() {
+      const res = await fetch(`${API_URL}/api/list`);
+      const keys = await res.json();
+      const box = document.getElementById("keyList");
+      box.innerHTML = "";
+      keys.forEach(k => {
+        const div = document.createElement("div");
+        div.className = "key-box";
+        div.innerHTML = `
+          <b>${k.key}</b>
+          <button class="copy" onclick="copyKey('${k.key}')">📋</button><br>
+          <span class="time">Còn lại: ${k.remaining}</span>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    function copyKey(key) {
+      navigator.clipboard.writeText(key);
+      alert("Đã sao chép: " + key);
+    }
+  </script>
+</body>
+</html>
